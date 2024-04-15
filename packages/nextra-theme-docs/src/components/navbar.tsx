@@ -3,7 +3,7 @@ import cn from 'clsx'
 import { useFSRoute } from 'nextra/hooks'
 import { ArrowRightIcon, MenuIcon } from 'nextra/icons'
 import type { Item, MenuItem, PageItem } from 'nextra/normalize-pages'
-import type { ReactElement, ReactNode } from 'react'
+import { useEffect, useState, version, type ReactElement, type ReactNode } from 'react'
 import { useConfig, useMenu } from '../contexts'
 import { renderComponent } from '../utils'
 import { Anchor } from './anchor'
@@ -82,7 +82,38 @@ export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
   const config = useConfig()
   const activeRoute = useFSRoute()
   const { menu, setMenu } = useMenu()
+  const [searhDirectories, setSearchDirectories] = useState<Item[]>([]);
+  const versions = config.versions;
 
+  useEffect(() => {
+    // if has versions
+    // if active route matches any of the versions
+    if (versions && versions.length > 0) {
+      const allRoutePaths = activeRoute.split('/');
+      if (allRoutePaths.length > 1) {
+        const basePath = allRoutePaths[1];
+        const versionMatch = versions.find(version => version.dir === basePath);
+        if (versionMatch) {
+          // if under a version directory, filter out all flat directories outside this dir
+          const _searhDirectories = flatDirectories.filter(dir => {
+            const routes = dir.route.split("/");
+            if (routes.length > 1) {
+              const baseRoutePath = routes[1];
+              return baseRoutePath === versionMatch.dir;
+            }
+            return true;
+          });
+          setSearchDirectories(_searhDirectories);
+          return;
+        } else {
+          setSearchDirectories(flatDirectories);
+          return;
+        }
+      }
+    } else {
+      setSearchDirectories(flatDirectories);
+    }
+  }, [flatDirectories, activeRoute, versions]);
   return (
     <div className="nextra-nav-container nx-sticky nx-top-0 nx-z-20 nx-w-full nx-bg-transparent print:nx-hidden">
       <div
@@ -163,7 +194,7 @@ export function Navbar({ flatDirectories, items }: NavBarProps): ReactElement {
         })}
 
         {renderComponent(config.search.component, {
-          directories: flatDirectories,
+          directories: searhDirectories,
           className: 'nx-hidden md:nx-inline-block mx-min-w-[200px]'
         })}
 

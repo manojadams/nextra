@@ -20,6 +20,7 @@ import { renderComponent } from '../utils'
 import { Anchor } from './anchor'
 import { Collapse } from './collapse'
 import { LocaleSwitch } from './locale-switch'
+import { getDirectoriesWithVersion } from '../utils/version'
 
 const TreeState: Record<string, boolean> = Object.create(null)
 
@@ -325,25 +326,33 @@ interface SideBarProps {
   docsDirectories: PageItem[]
   flatDirectories: Item[]
   fullDirectories: Item[]
+  versions?: Version[]
   asPopover?: boolean
   headings: Heading[]
   includePlaceholder: boolean
+}
+
+interface Version {
+  name: string;
+  dir: string;
 }
 
 export function Sidebar({
   docsDirectories,
   flatDirectories,
   fullDirectories,
+  versions,
   asPopover = false,
   headings,
   includePlaceholder
 }: SideBarProps): ReactElement {
-  const config = useConfig()
+  const config = useConfig();
   const { menu, setMenu } = useMenu()
   const router = useRouter()
   const [focused, setFocused] = useState<null | string>(null)
   const [showSidebar, setSidebar] = useState(true)
   const [showToggleAnimation, setToggleAnimation] = useState(false)
+  const [docsDirectoriesWithVersion, setDocsDirectoriesWithVersion] = useState<PageItem[]>([]);
 
   const anchors = useMemo(() => headings.filter(v => v.depth === 2), [headings])
   const sidebarRef = useRef<HTMLDivElement>(null)
@@ -385,6 +394,15 @@ export function Sidebar({
   useEffect(() => {
     setMenu(false)
   }, [router.asPath, setMenu])
+
+  useEffect(() => {
+    if (config.versions && config.versions.length > 0) {
+      const docDirectoriesWithVersion = getDirectoriesWithVersion(router.asPath, config.versions, docsDirectories)
+      setDocsDirectoriesWithVersion(docDirectoriesWithVersion);
+    } else {
+      setDocsDirectoriesWithVersion(docsDirectories);
+    }
+  }, [router.asPath, docsDirectories, config.versions]);
 
   const hasI18n = config.i18n.length > 0
   const hasMenu = config.darkMode || hasI18n || config.sidebar.toggleButton
@@ -442,7 +460,7 @@ export function Sidebar({
                   <Menu
                     className="nextra-menu-desktop max-md:nx-hidden"
                     // The sidebar menu, shows only the docs directories.
-                    directories={docsDirectories}
+                    directories={docsDirectoriesWithVersion}
                     // When the viewport size is larger than `md`, hide the anchors in
                     // the sidebar when `floatTOC` is enabled.
                     anchors={config.toc.float ? [] : anchors}

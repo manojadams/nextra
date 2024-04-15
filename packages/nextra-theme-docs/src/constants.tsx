@@ -160,7 +160,13 @@ export const themeSchema = z.strictObject({
       .optional(),
     title: z.custom<ReactNode | FC>(...reactNode)
   }),
-  useNextSeoProps: z.custom<() => NextSeoProps | void>(isFunction)
+  useNextSeoProps: z.custom<() => NextSeoProps | void>(isFunction),
+  versions: z.array(
+    z.object({ 
+      name: z.string(),
+      dir: z.string()
+    })
+  )
 })
 
 const publicThemeSchema = themeSchema.deepPartial().extend({
@@ -351,7 +357,8 @@ export const DEFAULT_THEME: DocsThemeConfig = {
     float: true,
     title: 'On This Page'
   },
-  useNextSeoProps: () => ({ titleTemplate: '%s – Nextra' })
+  useNextSeoProps: () => ({ titleTemplate: '%s – Nextra' }),
+  versions: []
 }
 
 export const DEEP_OBJECT_KEYS = Object.entries(DEFAULT_THEME)

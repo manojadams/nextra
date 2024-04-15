@@ -77,7 +77,7 @@ const loadIndexesImpl = async (
       resolution: 9,
       depth: 2,
       bidirectional: true
-    }
+    },
   })
 
   const sectionIndex: SectionIndex = new FlexSearch.Document({
@@ -266,6 +266,7 @@ export function Flexsearch({
     if (!indexes[locale]) {
       setLoading(true)
       try {
+        console.log('bpath', basePath);
         await loadIndexes(basePath, locale)
       } catch (e) {
         setError(true)

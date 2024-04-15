@@ -200,6 +200,7 @@ const InnerLayout = ({
             docsDirectories={docsDirectories}
             flatDirectories={flatDirectories}
             fullDirectories={directories}
+            versions={config.versions}
             headings={headings}
             asPopover={hideSidebar}
             includePlaceholder={themeContext.layout === 'default'}
